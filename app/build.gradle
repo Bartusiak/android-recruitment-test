@@ -36,7 +36,7 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = 1.8
+        sourceCompatibility = kotlin_version
     }
 }
 
