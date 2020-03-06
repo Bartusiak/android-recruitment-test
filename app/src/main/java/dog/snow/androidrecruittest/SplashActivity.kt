@@ -3,11 +3,16 @@ package dog.snow.androidrecruittest
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.postDelayed
+import androidx.room.Room
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dog.snow.androidrecruittest.repository.model.RawPhoto
 import dog.snow.androidrecruittest.repository.service.PhotoService
+import dog.snow.androidrecruittest.ui.dao.PhotosDatabase
+import dog.snow.androidrecruittest.ui.model.PhotosListItem
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,7 +35,30 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity) {
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState);
+        var database= Room
+            .databaseBuilder(applicationContext, PhotosDatabase::class.java, "photos")
+            .build()
+
+        val retrofit = Retrofit.Builder().baseUrl("https://jsonplaceholder.typicode.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val api = retrofit.create(PhotoService::class.java)
+
+        api.getAllPhotos().enqueue(object: Callback<List<PhotosListItem>>{
+            override fun onResponse(call: Call<List<PhotosListItem>>, response: Response<List<PhotosListItem>>){
+
+            }
+
+            override fun onFailure(call: Call<List<PhotosListItem>>, t: Throwable) {
+                val msg = showError(t.message)
+                Log.i("SPLASH_ACTIVITY", msg.toString(),t)
+            }
+        })
+
+
 /*
+
         val retrofit = Retrofit.Builder().baseUrl("https://jsonplaceholder.typicode.com")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
