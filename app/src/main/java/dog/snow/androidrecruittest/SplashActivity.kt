@@ -7,10 +7,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.postDelayed
+import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dog.snow.androidrecruittest.repository.model.RawPhoto
 import dog.snow.androidrecruittest.repository.service.PhotoService
+import dog.snow.androidrecruittest.ui.dao.PhotosDao
 import dog.snow.androidrecruittest.ui.dao.PhotosDatabase
 import dog.snow.androidrecruittest.ui.model.PhotosListItem
 import retrofit2.Call
@@ -19,7 +21,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class SplashActivity : AppCompatActivity(R.layout.splash_activity) {
+class SplashActivity : AppCompatActivity(R.layout.splash_activity){
     private val SPLASH_TIME_OUT = 1000;
 
     private fun showError(errorMessage: String?) {
@@ -43,18 +45,25 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity) {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        val api = retrofit.create(PhotoService::class.java)
+        val apiphotos = retrofit.create(PhotoService::class.java)
 
-        api.getAllPhotos().enqueue(object: Callback<List<PhotosListItem>>{
-            override fun onResponse(call: Call<List<PhotosListItem>>, response: Response<List<PhotosListItem>>){
+        fun doInBackground() {
+            apiphotos.getAllPhotos().enqueue(object : Callback<List<PhotosListItem>> {
+                override fun onResponse(
+                    call: Call<List<PhotosListItem>>,
+                    response: Response<List<PhotosListItem>>
+                ) {
+                    response.body()?.let { database.photosDao().insertAllPhotos(it) }
+                    Log.d("SPLASH onResponse", response.message())
+                }
 
-            }
+                override fun onFailure(call: Call<List<PhotosListItem>>, t: Throwable) {
+                    val msg = showError(t.message)
+                    Log.d("SPLASH_ACTIVITY", msg.toString())
 
-            override fun onFailure(call: Call<List<PhotosListItem>>, t: Throwable) {
-                val msg = showError(t.message)
-                Log.i("SPLASH_ACTIVITY", msg.toString(),t)
-            }
-        })
+                }
+            })
+        }
 
 
 /*
@@ -83,6 +92,5 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity) {
             }
         },SPLASH_TIME_OUT.toLong())
     }
-
 
 }
