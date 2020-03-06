@@ -30,7 +30,7 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity) {
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState);
-
+/*
         val retrofit = Retrofit.Builder().baseUrl("https://jsonplaceholder.typicode.com")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -46,7 +46,7 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity) {
                 showError(t.message)
             }
         })
-
+*/
         Handler().postDelayed(object:Runnable{
             public override fun run(){
                 val intent = Intent(this@SplashActivity,MainActivity::class.java)

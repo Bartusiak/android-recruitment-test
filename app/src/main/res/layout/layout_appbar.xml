@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/appbar"
-    style="@style/Widget.AppTheme.AppBar"
+    style="@style/Base.AppTheme"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
 
-    <include layout="@layout/layout_toolbar" />
+    >
 
-    <include layout="@layout/layout_banner" />
+    <include layout="@layout/layout_toolbar"
+        style="@style/Base.AppTheme"/>
+
+    <include layout="@layout/layout_banner"
+        style="@style/Base.AppTheme"/>
 </com.google.android.material.appbar.AppBarLayout>
