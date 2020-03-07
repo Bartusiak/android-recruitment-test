@@ -1,0 +1,22 @@
+package dog.snow.androidrecruittest.ui.dao
+
+import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import dog.snow.androidrecruittest.ui.model.AlbumsListItem
+
+@Dao
+interface AlbumsDao {
+
+    @Query("SELECT * FROM albums_list_item")
+    fun getAllAlbums(): LiveData<List<AlbumsListItem>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAllAlbums(albumsList: List<AlbumsListItem>)
+
+    @Query("DELETE FROM albums_list_item")
+    fun deleteAllAlbums()
+
+}
