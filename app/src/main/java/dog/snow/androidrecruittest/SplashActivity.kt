@@ -39,19 +39,26 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.concurrent.thread
 
 class SplashActivity : AppCompatActivity(R.layout.splash_activity){
     private val SPLASH_TIME_OUT = 1000;
+    private var photosIsComplete: Boolean? = false
+    private var albumsIsComplete: Boolean? = false
+    private var usersIsComplete: Boolean? = false
+
 
     val okHttpClient = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().apply{
         level=HttpLoggingInterceptor.Level.BODY
     }).build()
 
+
+
     private fun showError(errorMessage: String?) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.cant_download_dialog_title)
             .setMessage(getString(R.string.cant_download_dialog_message, errorMessage))
-            .setPositiveButton(R.string.cant_download_dialog_btn_positive) { _, _ -> /*tryAgain()*/ }
+            .setPositiveButton(R.string.cant_download_dialog_btn_positive) { _, _ -> loadDataFromWeb() }
             .setNegativeButton(R.string.cant_download_dialog_btn_negative) { _, _ -> finish() }
             .create()
             .apply { setCanceledOnTouchOutside(false) }
@@ -60,6 +67,28 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState);
+
+
+        loadDataFromWeb()
+
+        Handler().postDelayed(object:Runnable{
+            public override fun run(){
+                checkApisComplete()
+            }
+        },SPLASH_TIME_OUT.toLong())
+
+    }
+
+    private fun checkApisComplete(){
+        Log.d("DEBUG_CheckApi","photo: "+photosIsComplete+" albums: "+ albumsIsComplete + " users: "+usersIsComplete)
+        if(photosIsComplete==true && albumsIsComplete==true && usersIsComplete==true ){
+            val intent = Intent(this@SplashActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+    }
+
+    private fun loadDataFromWeb(){
         var database_photos= Room
             .databaseBuilder(applicationContext, PhotosDatabase::class.java, "photos")
             .build()
@@ -72,7 +101,6 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
             .databaseBuilder(applicationContext,UsersDatabase::class.java,"users")
             .build()
 
-
         val retrofit = Retrofit.Builder().baseUrl("https://jsonplaceholder.typicode.com")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
@@ -83,88 +111,34 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
         val apialbums = retrofit.create(AlbumService::class.java)
         val apiusers = retrofit.create(UserService::class.java)
 
-
-        apiphotos.getAllPhotos().observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(onNext = {
-                database_photos.photosDao().insertAllPhotos(it)
-            },onError = {
-                showError(it.message);
+        apiphotos.getAllPhotos().doOnNext{database_photos.photosDao().insertAllPhotos(it)}.observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(onError = {
+                showError("ApiPhotos: " + it.message);
+                Log.d("DEBUG_API_PHOTO: ", it.message)
+            },onComplete = {
+                photosIsComplete=true
             })
 
-        apialbums.getAllAlbums().observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(onNext = {
-                database_albums.albumsDao().insertAllAlbums(it)
-            },onError = {
-                showError(it.message)
+        apialbums.getAllAlbums().doOnNext{database_albums.albumsDao().insertAllAlbums(it)}.observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(onError = {
+                showError("ApiAlbums: " + it.message)
+                Log.d("DEBUG_API_ALBUM: ",  it.message)
+            },onComplete = {
+                albumsIsComplete=true
             })
 
-        apiusers.getAllUsers().observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(onNext = {
-                database_users.usersDao().insertAllUsers(it)
-            },onError = {
-                showError(it.message)
+        apiusers.getAllUsers().doOnNext{database_users.usersDao().insertAllUsers(it)}.observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(onError = {
+                showError("ApiUsers: " + it.message)
+                Log.d("DEBUG_API_USERS: ",  it.message)
+            },onComplete = {
+                usersIsComplete=true
             })
 
+        checkApisComplete()
 
 
-        /*apiphotos.getAllPhotos().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
-             CompletableObserver() {
-                 override fun onSubscribe(Disposable d) {
-
-                 }
-
-             })*/
-
-        /*apiphotos.getAllPhotos().enqueue(object : Callback<List<PhotosListItem>> {
-            override fun onResponse(call: Call<List<PhotosListItem>>, response: Response<List<PhotosListItem>>
-            ) {
-                response.body()?.let { database_photos.photosDao().insertAllPhotos(it) }
-            }
-            override fun onFailure(call: Call<List<PhotosListItem>>, t: Throwable) {
-                val msg = showError(t.message)
-                Log.d("Splash: onFail..", msg.toString())
-            }
-        })
-
-        apialbums.getAllAlbums().enqueue(object : Callback<List<AlbumsListItem>>{
-            override fun onResponse(call: Call<List<AlbumsListItem>>, response: Response<List<AlbumsListItem>>
-            ) {
-                response.body()?.let { database_albums.albumsDao().insertAllAlbums(it) }
-            }
-            override fun onFailure(call: Call<List<AlbumsListItem>>, t: Throwable) {
-                val msg = showError(t.message)
-                Log.d("Splash: onFail..",msg.toString())
-            }
-        })
-
-        apiusers.getAllUsers().enqueue(object : Callback<List<UsersListItem>>{
-            override fun onResponse(call: Call<List<UsersListItem>>, response: Response<List<UsersListItem>>
-            ) {
-                response.body()?.let { database_users.usersDao().insertAllUsers(it) }
-            }
-            override fun onFailure(call: Call<List<UsersListItem>>, t: Throwable) {
-                val msg = showError(t.message)
-                Log.d("Splash: onFail...",msg.toString())
-            }
-        })*/
-
-        Handler().postDelayed(object:Runnable{
-            public override fun run(){
-                val intent = Intent(this@SplashActivity,MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-        },SPLASH_TIME_OUT.toLong())
 
     }
-
-    /*fun hasNetwork(context: Context): Boolean? {
-        var isConnected: Boolean? = false
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
-        if (activeNetwork != null && activeNetwork.isConnected)
-            isConnected=true
-        return isConnected
-    }*/
 
 }

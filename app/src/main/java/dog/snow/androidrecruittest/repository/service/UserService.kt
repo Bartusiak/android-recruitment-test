@@ -12,5 +12,5 @@ interface UserService {
 
     @GET("users")
     //fun getAllUsers(@Query("id")id:UsersListItem): Observable<List<UsersListItem>>
-    fun getAllUsers(): Observable<List<UsersListItem>>
+    fun getAllUsers(@Query("limit") limit:Int=100): Observable<List<UsersListItem>>
 }

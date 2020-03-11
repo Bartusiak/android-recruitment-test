@@ -8,6 +8,7 @@ import androidx.room.Query
 import dog.snow.androidrecruittest.ui.model.UsersListItem
 import io.reactivex.Flowable
 
+
 @Dao
 interface UsersDao {
     @Query("SELECT * FROM users_list_item ")

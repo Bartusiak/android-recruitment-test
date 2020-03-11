@@ -8,6 +8,7 @@ import androidx.room.Query
 import dog.snow.androidrecruittest.ui.model.PhotosListItem
 import io.reactivex.Flowable
 
+
 @Dao
 interface PhotosDao {
 

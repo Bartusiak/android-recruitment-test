@@ -17,8 +17,8 @@ class MainActivity : AppCompatActivity(R.layout.main_activity){
         super.onCreate(savedInstanceState)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+//        recyclerView.setHasFixedSize(true)
+ //       recyclerView.layoutManager = LinearLayoutManager(this)
 
 
     }
