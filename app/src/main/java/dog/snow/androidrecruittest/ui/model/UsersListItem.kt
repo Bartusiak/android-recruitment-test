@@ -16,13 +16,11 @@ data class UsersListItem (
     @ColumnInfo(name = "user_email")
     val email: String,
     @Embedded
-    @ColumnInfo(name = "user_address")
     val address: RawAddress,
     @ColumnInfo(name = "user_phone")
     val phone: String,
     @ColumnInfo(name = "website")
     val website: String,
     @Embedded
-    @ColumnInfo(name = "user_company")
     val company: RawCompany
 )

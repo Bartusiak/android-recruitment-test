@@ -91,14 +91,17 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
     private fun loadDataFromWeb(){
         var database_photos= Room
             .databaseBuilder(applicationContext, PhotosDatabase::class.java, "photos")
+            .fallbackToDestructiveMigration()
             .build()
 
         var database_albums = Room
             .databaseBuilder(applicationContext,AlbumsDatabase::class.java,"albums")
+            .fallbackToDestructiveMigration()
             .build()
 
         var database_users = Room
             .databaseBuilder(applicationContext,UsersDatabase::class.java,"users")
+            .fallbackToDestructiveMigration()
             .build()
 
         val retrofit = Retrofit.Builder().baseUrl("https://jsonplaceholder.typicode.com")

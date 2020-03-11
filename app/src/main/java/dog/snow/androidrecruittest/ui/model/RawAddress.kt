@@ -17,6 +17,5 @@ data class RawAddress(
     @ColumnInfo(name = "zipcode")
     val zipcode: String,
     @Embedded
-    @ColumnInfo(name = "geo")
     val geo: RawGeo
 )
