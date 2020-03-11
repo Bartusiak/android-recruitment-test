@@ -6,14 +6,15 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import dog.snow.androidrecruittest.ui.model.UsersListItem
+import io.reactivex.Flowable
 
 @Dao
 interface UsersDao {
     @Query("SELECT * FROM users_list_item ")
-    fun getAllUsers(): LiveData<List<UsersListItem>>
+    fun getAllUsers(): Flowable<List<UsersListItem>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllUsers(photosList: List<UsersListItem>)
+    fun insertAllUsers(userList: List<UsersListItem>)
 
     @Query("DELETE FROM users_list_item")
     fun deleteAllPhotos()
