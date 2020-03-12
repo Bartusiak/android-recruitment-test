@@ -21,9 +21,7 @@ class ListAdapter(private val onClick: (item: ListItem, position: Int, view: Vie
     override fun onBindViewHolder(holder: ViewHolder, position: Int) =
         holder.bind(getItem(position))
 
-    class ViewHolder(
-        itemView: View,
-        private val onClick: (item: ListItem, position: Int, view: View) -> Unit
+    class ViewHolder(itemView: View, private val onClick: (item: ListItem, position: Int, view: View) -> Unit
     ) :
         RecyclerView.ViewHolder(itemView) {
         fun bind(item: ListItem) = with(itemView) {

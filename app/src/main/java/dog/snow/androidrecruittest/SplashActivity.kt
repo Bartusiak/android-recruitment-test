@@ -11,6 +11,12 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dog.snow.androidrecruittest.LoadRetrofitAndRoom.apialbums
+import dog.snow.androidrecruittest.LoadRetrofitAndRoom.apiphotos
+import dog.snow.androidrecruittest.LoadRetrofitAndRoom.apiusers
+import dog.snow.androidrecruittest.LoadRetrofitAndRoom.database_albums
+import dog.snow.androidrecruittest.LoadRetrofitAndRoom.database_photos
+import dog.snow.androidrecruittest.LoadRetrofitAndRoom.database_users
 import dog.snow.androidrecruittest.repository.service.AlbumService
 import dog.snow.androidrecruittest.repository.service.PhotoService
 import dog.snow.androidrecruittest.repository.service.UserService
@@ -47,13 +53,6 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
     private var albumsIsComplete: Boolean? = false
     private var usersIsComplete: Boolean? = false
 
-
-    val okHttpClient = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().apply{
-        level=HttpLoggingInterceptor.Level.BODY
-    }).build()
-
-
-
     private fun showError(errorMessage: String?) {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.cant_download_dialog_title)
@@ -67,16 +66,12 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState);
-
-
         loadDataFromWeb()
-
         Handler().postDelayed(object:Runnable{
             public override fun run(){
                 checkApisComplete()
             }
         },SPLASH_TIME_OUT.toLong())
-
     }
 
     private fun checkApisComplete(){
@@ -88,60 +83,35 @@ class SplashActivity : AppCompatActivity(R.layout.splash_activity){
         }
     }
 
-    private fun loadDataFromWeb(){
-        var database_photos= Room
-            .databaseBuilder(applicationContext, PhotosDatabase::class.java, "photos")
-            .fallbackToDestructiveMigration()
-            .build()
-
-        var database_albums = Room
-            .databaseBuilder(applicationContext,AlbumsDatabase::class.java,"albums")
-            .fallbackToDestructiveMigration()
-            .build()
-
-        var database_users = Room
-            .databaseBuilder(applicationContext,UsersDatabase::class.java,"users")
-            .fallbackToDestructiveMigration()
-            .build()
-
-        val retrofit = Retrofit.Builder().baseUrl("https://jsonplaceholder.typicode.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
-            .client(okHttpClient)
-            .build()
-
-        val apiphotos = retrofit.create(PhotoService::class.java)
-        val apialbums = retrofit.create(AlbumService::class.java)
-        val apiusers = retrofit.create(UserService::class.java)
-
-        apiphotos.getAllPhotos().doOnNext{database_photos.photosDao().insertAllPhotos(it)}.observeOn(AndroidSchedulers.mainThread())
+    private fun loadDataFromWeb() {
+        apiphotos.getAllPhotos().doOnNext { database_photos?.photosDao()?.insertAllPhotos(it) }
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(onError = {
                 showError("ApiPhotos: " + it.message);
                 Log.d("DEBUG_API_PHOTO: ", it.message)
-            },onComplete = {
-                photosIsComplete=true
+            }, onComplete = {
+                photosIsComplete = true
             })
 
-        apialbums.getAllAlbums().doOnNext{database_albums.albumsDao().insertAllAlbums(it)}.observeOn(AndroidSchedulers.mainThread())
+        apialbums.getAllAlbums().doOnNext { database_albums?.albumsDao()?.insertAllAlbums(it) }
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(onError = {
                 showError("ApiAlbums: " + it.message)
-                Log.d("DEBUG_API_ALBUM: ",  it.message)
-            },onComplete = {
-                albumsIsComplete=true
+                Log.d("DEBUG_API_ALBUM: ", it.message)
+            }, onComplete = {
+                albumsIsComplete = true
             })
 
-        apiusers.getAllUsers().doOnNext{database_users.usersDao().insertAllUsers(it)}.observeOn(AndroidSchedulers.mainThread())
+        apiusers.getAllUsers().doOnNext { database_users?.usersDao()?.insertAllUsers(it) }
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(onError = {
                 showError("ApiUsers: " + it.message)
-                Log.d("DEBUG_API_USERS: ",  it.message)
-            },onComplete = {
-                usersIsComplete=true
+                Log.d("DEBUG_API_USERS: ", it.message)
+            }, onComplete = {
+                usersIsComplete = true
             })
 
         checkApisComplete()
-
-
-
     }
 
 }
